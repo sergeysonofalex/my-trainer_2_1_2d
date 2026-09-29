@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Файлы и папки — 2 класс</title>
+<style>
+  :root{
+    --blue:#3aa3ff;
+    --green:#22b573;
+    --red:#e74c3c;
+    --yellow:#ffc93c;
+    --purple:#8e5cff;
+    --orange:#ff7a59;
+    --ink:#20304a;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  html,body{ margin:0; padding:0; min-height:100%; }
+
+  body{
+    font-family:"Comic Sans MS","Segoe UI",system-ui,-apple-system,sans-serif;
+    background:linear-gradient(160deg,#eaf6ff 0%,#fff8e8 55%,#ffeef7 100%);
+    color:var(--ink);
+    overflow-x:hidden;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  /* ---------- ШАПКА ---------- */
+  header{ padding:8px 14px 0; text-align:center; }
+
+  h1{
+    font-size:32px;
+    margin:0 0 8px;
+    color:#14315e;
+    text-shadow:0 2px 0 #fff, 0 4px 8px rgba(20,49,94,.12);
+    letter-spacing:.3px;
+  }
+
+  .tabs{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:4px;
+  }
+
+  .tab{
+    font-family:inherit;
+    font-size:20px;
+    font-weight:800;
+    padding:10px 20px;
+    border-radius:999px;
+    border:4px solid #b9c9dd;
+    background:#fff;
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .15s, background .2s, border-color .2s, box-shadow .2s, color .2s;
+    box-shadow:0 4px 0 rgba(31,58,107,.12);
+  }
+  .tab:hover{ transform:translateY(-2px); }
+  .tab:active{ transform:translateY(1px); box-shadow:0 1px 0 rgba(31,58,107,.12); }
+
+  .tab.active{
+    background:linear-gradient(180deg,#61c5ff,#2f8fef);
+    border-color:#1f6fd0;
+    color:#fff;
+    box-shadow:0 5px 0 #1f6fd0;
+  }
+
+  /* ---------- УРОВНИ ---------- */
+  .level{ display:none; padding:10px 16px 6px; }
+  .level.active{ display:block; animation:fadeIn .3s ease; }
+
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+
+  .task{
+    font-size:26px;
+    font-weight:800;
+    text-align:center;
+    margin:6px 0 12px;
+    color:#1b3a6b;
+  }
+
+  /* ---------- УРОВЕНЬ 1 ---------- */
+  #matchArea{
+    position:relative;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px 40px;
+    max-width:1200px;
+    margin:0 auto;
+  }
+
+  #lines{
+    position:absolute;
+    left:0; top:0;
+    width:100%; height:100%;
+    pointer-events:none;
+    overflow:visible;
+    z-index:0;
+  }
+
+  .col{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    position:relative;
+    z-index:1;
+  }
+
+  .card{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#fff;
+    border:4px solid #cfd9e8;
+    border-radius:16px;
+    padding:12px 16px;
+    font-size:22px;
+    font-weight:800;
+    color:var(--ink);
+    cursor:pointer;
+    touch-action:manipulation;
+    box-shadow:0 4px 0 rgba(31,58,107,.12);
+    transition:transform .15s, border-color .2s, background .2s, box-shadow .2s;
+  }
+  .card:hover{ transform:translateY(-2px); }
+  .card .icon{ font-size:32px; line-height:1; }
+
+  .card.selected{
+    border-color:#ff9f1c;
+    background:#fff7e6;
+    box-shadow:0 0 0 6px rgba(255,159,28,.30);
+    transform:translateY(-2px);
+  }
+
+  .card.matched{
+    cursor:default;
+    box-shadow:0 0 0 3px rgba(34,181,115,.18);
+    animation:popIn .4s ease;
+  }
+  .card.matched:hover{ transform:none; }
+
+  @keyframes popIn{
+    0%{ transform:scale(1); }
+    45%{ transform:scale(1.05); }
+    100%{ transform:scale(1); }
+  }
+
+  /* ---------- УРОВЕНЬ 2 ---------- */
+  #pool{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    justify-content:center;
+    align-content:flex-start;
+    min-height:150px;
+    padding:12px;
+    border:4px dashed #b9c9dd;
+    border-radius:20px;
+    background:rgba(255,255,255,.55);
+    max-width:1200px;
+    margin:0 auto;
+  }
+
+  .file-card{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#fff;
+    border:4px solid var(--yellow);
+    border-radius:14px;
+    padding:10px 16px;
+    font-size:22px;
+    font-weight:800;
+    color:var(--ink);
+    cursor:grab;
+    touch-action:none;
+    box-shadow:0 4px 0 rgba(31,58,107,.14);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .file-card:hover{ transform:translateY(-2px); }
+  .file-card .fc-icon{ font-size:28px; line-height:1; }
+  .file-card.ghost{ visibility:hidden; }
+
+  .drag-clone{
+    position:fixed;
+    z-index:9998;
+    pointer-events:none;
+    transform:rotate(-2deg) scale(1.03);
+    box-shadow:0 12px 24px rgba(0,0,0,.22);
+    cursor:grabbing;
+  }
+
+  #folders{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+    margin-top:16px;
+    max-width:1200px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  .folder{
+    background:linear-gradient(180deg,#ffeeb5,#ffd166);
+    border:4px solid #e0a800;
+    border-radius:20px;
+    padding:12px;
+    min-height:140px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    text-align:center;
+    transition:transform .15s, box-shadow .2s, background .2s;
+  }
+
+  .folder .folder-icon{ font-size:40px; line-height:1; }
+  .folder .folder-name{ font-size:22px; font-weight:800; color:#5a3d00; }
+  .folder .folder-count{
+    font-size:18px;
+    font-weight:800;
+    color:#8a6d00;
+    background:rgba(255,255,255,.75);
+    padding:2px 12px;
+    border-radius:999px;
+  }
+
+  .folder.hover{
+    transform:scale(1.04);
+    box-shadow:0 0 0 8px rgba(58,163,255,.35);
+  }
+  .folder.bad{
+    box-shadow:0 0 0 8px rgba(231,76,60,.40) !important;
+    background:linear-gradient(180deg,#ffd9d3,#ffb3a7);
+  }
+
+  /* ---------- УРОВЕНЬ 3 ---------- */
+  #l3progress{
+    text-align:center;
+    font-size:20px;
+    font-weight:800;
+    color:#7a5cc4;
+    margin-bottom:8px;
+  }
+
+  #situation{
+    max-width:1100px;
+    margin:0 auto 20px;
+    background:#fff;
+    border:4px solid var(--purple);
+    border-radius:22px;
+    padding:20px 26px;
+    min-height:120px;
+    font-size:26px;
+    font-weight:800;
+    color:#3b1d6e;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    text-align:center;
+    box-shadow:0 6px 0 rgba(142,92,255,.20);
+    animation:fadeIn .3s ease;
+  }
+  #situation .sit-icon{ font-size:44px; line-height:1; }
+
+  #answers{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    max-width:1200px;
+    margin:0 auto;
+  }
+
+  .answer-btn{
+    font-family:inherit;
+    font-size:22px;
+    font-weight:800;
+    color:var(--ink);
+    padding:18px 8px;
+    border-radius:18px;
+    border:4px solid #cfd9e8;
+    background:#fff;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    box-shadow:0 6px 0 rgba(31,58,107,.12);
+    transition:transform .15s, border-color .2s, background .2s, box-shadow .2s;
+  }
+  .answer-btn .em{ font-size:32px; line-height:1; }
+  .answer-btn:hover{ transform:translateY(-3px); }
+  .answer-btn:active{ transform:translateY(2px); box-shadow:0 2px 0 rgba(31,58,107,.12); }
+
+  .answer-btn.correct{
+    border-color:var(--green);
+    background:#e9fbf1;
+    box-shadow:0 0 0 8px rgba(34,181,115,.28);
+    animation:glowGreen 1s ease;
+  }
+  .answer-btn:disabled{ cursor:default; opacity:.95; }
+  .answer-btn:disabled:hover{ transform:none; }
+
+  @keyframes glowGreen{
+    0%{ box-shadow:0 0 0 0 rgba(34,181,115,.65); }
+    100%{ box-shadow:0 0 0 22px rgba(34,181,115,0); }
+  }
+
+  /* ---------- ОБЩИЕ ЭФФЕКТЫ ---------- */
+  @keyframes shake{
+    0%,100%{ transform:translateX(0) rotate(0); }
+    15%{ transform:translateX(-10px) rotate(-1.5deg); }
+    30%{ transform:translateX(10px) rotate(1.5deg); }
+    45%{ transform:translateX(-7px) rotate(-1deg); }
+    60%{ transform:translateX(7px) rotate(1deg); }
+    80%{ transform:translateX(-3px) rotate(0); }
+  }
+
+  .shake-red{
+    animation:shake .5s ease !important;
+    border-color:var(--red) !important;
+    background:#ffecec !important;
+  }
+
+  .confetti{
+    position:fixed;
+    z-index:9999;
+    pointer-events:none;
+    animation:fly 1.2s ease-out forwards;
+  }
+
+  @keyframes fly{
+    0%{ transform:translate(0,0) scale(.4) rotate(0deg); opacity:1; }
+    100%{ transform:translate(var(--dx), calc(var(--dy) + 360px)) scale(1.15) rotate(320deg); opacity:0; }
+  }
+
+  .toast{
+    position:fixed;
+    top:12px;
+    left:50%;
+    transform:translate(-50%,-220%);
+    background:linear-gradient(180deg,#5ddc93,#22b573);
+    color:#fff;
+    font-size:24px;
+    font-weight:800;
+    padding:12px 30px;
+    border-radius:999px;
+    box-shadow:0 8px 20px rgba(0,0,0,.22);
+    z-index:10000;
+    transition:transform .4s cubic-bezier(.2,1.5,.5,1);
+    white-space:nowrap;
+    max-width:94vw;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .toast.show{ transform:translate(-50%,0); }
+
+  /* ---------- ПОДВАЛ ---------- */
+  footer{ text-align:center; padding:10px 0 20px; }
+
+  #resetBtn{
+    font-family:inherit;
+    font-size:24px;
+    font-weight:800;
+    color:#5a3d00;
+    padding:12px 32px;
+    border-radius:999px;
+    border:4px solid #e0a800;
+    background:linear-gradient(180deg,#ffe485,#ffc93c);
+    cursor:pointer;
+    box-shadow:0 6px 0 #d9a400;
+    transition:transform .12s, box-shadow .12s;
+  }
+  #resetBtn:active{ transform:translateY(4px); box-shadow:0 2px 0 #d9a400; }
+
+  /* ---------- АДАПТАЦИЯ ДЛЯ НОУТБУКОВ ---------- */
+  @media (max-width:1366px){
+    h1{ font-size:28px; }
+    .tab{ font-size:18px; padding:8px 16px; }
+    .task{ font-size:22px; }
+    .card{ font-size:20px; padding:10px 14px; }
+    .card .icon{ font-size:28px; }
+    .file-card{ font-size:20px; padding:8px 12px; }
+    .folder .folder-name{ font-size:20px; }
+    .folder .folder-count{ font-size:16px; }
+    #situation{ font-size:22px; padding:16px 20px; }
+    .answer-btn{ font-size:20px; padding:14px 6px; }
+    .answer-btn .em{ font-size:28px; }
+    #resetBtn{ font-size:20px; padding:10px 26px; }
+    .toast{ font-size:20px; padding:10px 24px; }
+  }
+
+  @media (max-width:1024px){
+    #matchArea{ gap:12px 30px; }
+    #answers{ grid-template-columns:repeat(2,1fr); }
+    #folders{ grid-template-columns:1fr; }
+    .card{ font-size:18px; padding:8px 12px; }
+    .card .icon{ font-size:24px; }
+    .file-card{ font-size:18px; }
+    .file-card .fc-icon{ font-size:24px; }
+    .task{ font-size:20px; }
+    #situation{ font-size:20px; }
+    .answer-btn{ font-size:18px; }
+  }
+
+  @media (max-width:768px){
+    h1{ font-size:24px; }
+    .tab{ font-size:16px; padding:6px 12px; }
+    .task{ font-size:18px; }
+    #pool{ min-height:120px; }
+    .folder{ min-height:110px; }
+    .folder .folder-icon{ font-size:32px; }
+    .folder .folder-name{ font-size:18px; }
+    #situation{ font-size:18px; padding:12px 16px; }
+    .answer-btn{ font-size:16px; padding:10px 4px; }
+    .answer-btn .em{ font-size:24px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🗂️ Файлы и папки</h1>
+  <nav class="tabs">
+    <button class="tab active" data-level="1">Уровень 1: Знание</button>
+    <button class="tab" data-level="2">Уровень 2: Понимание</button>
+    <button class="tab" data-level="3">Уровень 3: Применение</button>
+  </nav>
+</header>
+
+<main>
+  <!-- УРОВЕНЬ 1 -->
+  <section id="level1" class="level active">
+    <p class="task">🔍 Соотнеси файл и его вид!</p>
+    <div id="matchArea">
+      <svg id="lines" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="col" id="fileCol"></div>
+      <div class="col" id="typeCol"></div>
+    </div>
+  </section>
+
+  <!-- УРОВЕНЬ 2 -->
+  <section id="level2" class="level">
+    <p class="task">🧹 Наведи порядок! Разложи файлы по правильным папкам</p>
+    <div id="pool"></div>
+    <div id="folders"></div>
+  </section>
+
+  <!-- УРОВЕНЬ 3 -->
+  <section id="level3" class="level">
+    <p class="task">🤖 Помоги компьютеру! Выбери нужную команду</p>
+    <div id="l3progress"></div>
+    <div id="situation"></div>
+    <div id="answers"></div>
+  </section>
+</main>
+
+<footer>
+  <button id="resetBtn">🔄 Начать заново</button>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============================================================
+   ЗВУК (Web Audio API — без внешних файлов)
+   ============================================================ */
+let audioCtx = null;
+
+function initAudio(){
+  if(!audioCtx){
+    try{
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }catch(e){ audioCtx = null; }
+  }
+  if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume(); }
+}
+
+function tone(freq, dur, type='sine', vol=0.16, delay=0){
+  if(!audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g);
+  g.connect(audioCtx.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.06);
+}
+
+const snd = {
+  click(){ tone(560, .07, 'sine', .09); },
+  correct(){ tone(660,.12,'sine',.16); tone(880,.12,'sine',.16,.10); tone(1180,.22,'sine',.14,.20); },
+  wrong(){ tone(220,.22,'triangle',.13); tone(155,.28,'triangle',.11,.13); },
+  pop(){ tone(880,.08,'sine',.12); tone(1320,.12,'sine',.10,.07); },
+  win(){ [523,659,784,1046].forEach((f,i)=>tone(f,.28,'sine',.15,i*.13)); }
+};
+
+window.addEventListener('pointerdown', initAudio, { once:true });
+
+/* ============================================================
+   КОНФЕТТИ + ВСПЛЫВАЮЩЕЕ СООБЩЕНИЕ
+   ============================================================ */
+const CONFETTI_EMOJI = ['⭐','✨','🌟','💫','🎉','🎊','🌈'];
+
+function confetti(x, y, count = 16){
+  for(let i = 0; i < count; i++){
+    const s = document.createElement('div');
+    s.className = 'confetti';
+    s.textContent = CONFETTI_EMOJI[Math.floor(Math.random() * CONFETTI_EMOJI.length)];
+    s.style.left = x + 'px';
+    s.style.top = y + 'px';
+    s.style.fontSize = (18 + Math.random() * 20) + 'px';
+    s.style.setProperty('--dx', ((Math.random() - 0.5) * 400).toFixed(0) + 'px');
+    s.style.setProperty('--dy', (-Math.random() * 280 - 50).toFixed(0) + 'px');
+    s.style.animationDelay = (Math.random() * 0.15).toFixed(2) + 's';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1400);
+  }
+}
+
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ============================================================
+   УРОВЕНЬ 1 — «ЗНАНИЕ» (соотнесение)
+   ============================================================ */
+const L1_FILES = [
+  { id:'file1', icon:'📝', name:'Сказка.txt',  target:'type1', color:'#ff7a59' },
+  { id:'file2', icon:'🎨', name:'Кот.png',     target:'type2', color:'#3aa3ff' },
+  { id:'file3', icon:'🎵', name:'Песня.mp3',   target:'type3', color:'#8e5cff' },
+  { id:'file4', icon:'🎬', name:'Мультик.mp4', target:'type4', color:'#00b884' }
+];
+
+const L1_TYPES = [
+  { id:'type1', icon:'📄', name:'Текстовый файл' },
+  { id:'type2', icon:'🖼️', name:'Графический файл' },
+  { id:'type3', icon:'🔊', name:'Звуковой файл' },
+  { id:'type4', icon:'🎞️', name:'Видеофайл' }
+];
+
+let l1state = { selFile:null, selType:null, matched:[] };
+
+function hexToRgba(hex, a){
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initLevel1(){
+  const fileCol = document.getElementById('fileCol');
+  const typeCol = document.getElementById('typeCol');
+  const svg = document.getElementById('lines');
+
+  fileCol.innerHTML = '';
+  typeCol.innerHTML = '';
+  svg.innerHTML = '';
+  l1state = { selFile:null, selType:null, matched:[] };
+
+  L1_FILES.forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.fileId = f.id;
+    el.dataset.target = f.target;
+    el.dataset.color  = f.color;
+    el.innerHTML = `<span class="icon">${f.icon}</span><span>${f.name}</span>`;
+    el.addEventListener('click', () => onFilePick(el));
+    fileCol.appendChild(el);
+  });
+
+  shuffle(L1_TYPES).forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.typeId = t.id;
+    el.innerHTML = `<span class="icon">${t.icon}</span><span>${t.name}</span>`;
+    el.addEventListener('click', () => onTypePick(el));
+    typeCol.appendChild(el);
+  });
+
+  requestAnimationFrame(drawLines);
+}
+
+function onFilePick(el){
+  initAudio(); snd.click();
+  if(el.classList.contains('matched')) return;
+
+  if(l1state.selFile === el){
+    el.classList.remove('selected');
+    l1state.selFile = null;
+    return;
+  }
+  if(l1state.selFile) l1state.selFile.classList.remove('selected');
+
+  l1state.selFile = el;
+  el.classList.add('selected');
+
+  if(l1state.selType) checkMatchL1();
+}
+
+function onTypePick(el){
+  initAudio(); snd.click();
+  if(el.classList.contains('matched')) return;
+
+  if(l1state.selType === el){
+    el.classList.remove('selected');
+    l1state.selType = null;
+    return;
+  }
+  if(l1state.selType) l1state.selType.classList.remove('selected');
+
+  l1state.selType = el;
+  el.classList.add('selected');
+
+  if(l1state.selFile) checkMatchL1();
+}
+
+function checkMatchL1(){
+  const f = l1state.selFile;
+  const t = l1state.selType;
+  if(!f || !t) return;
+
+  if(f.dataset.target === t.dataset.typeId){
+    const color = f.dataset.color;
+
+    f.classList.remove('selected');
+    t.classList.remove('selected');
+    f.classList.add('matched');
+    t.classList.add('matched');
+
+    f.style.borderColor = color;
+    t.style.borderColor = color;
+    f.style.background  = hexToRgba(color, .12);
+    t.style.background  = hexToRgba(color, .12);
+
+    l1state.matched.push({ fileId:f.dataset.fileId, typeId:t.dataset.typeId, color });
+    l1state.selFile = null;
+    l1state.selType = null;
+
+    drawLines();
+    snd.correct();
+
+    const r = f.getBoundingClientRect();
+    confetti(r.left + r.width / 2, r.top + r.height / 2, 14);
+
+    if(l1state.matched.length === L1_FILES.length){
+      setTimeout(() => {
+        snd.win();
+        showToast('🎉 Молодцы! Все файлы нашли свой вид!');
+      }, 450);
+    }
+  } else {
+    f.classList.add('shake-red');
+    t.classList.add('shake-red');
+    snd.wrong();
+
+    l1state.selFile = null;
+    l1state.selType = null;
+
+    setTimeout(() => {
+      f.classList.remove('shake-red','selected');
+      t.classList.remove('shake-red','selected');
+    }, 550);
+  }
+}
+
+function drawLines(){
+  const svg  = document.getElementById('lines');
+  const area = document.getElementById('matchArea');
+  if(!svg || !area) return;
+
+  const ar = area.getBoundingClientRect();
+  if(ar.width === 0 || ar.height === 0) return;
+
+  svg.setAttribute('viewBox', `0 0 ${ar.width} ${ar.height}`);
+  svg.innerHTML = '';
+
+  l1state.matched.forEach(m => {
+    const f = area.querySelector(`[data-file-id="${m.fileId}"]`);
+    const t = area.querySelector(`[data-type-id="${m.typeId}"]`);
+    if(!f || !t) return;
+
+    const fr = f.getBoundingClientRect();
+    const tr = t.getBoundingClientRect();
+
+    const x1 = fr.right - ar.left;
+    const y1 = fr.top - ar.top + fr.height / 2;
+    const x2 = tr.left - ar.left;
+    const y2 = tr.top - ar.top + tr.height / 2;
+    const mx = (x1 + x2) / 2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`);
+    path.setAttribute('stroke', m.color);
+    path.setAttribute('stroke-width', '7');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('opacity', '0.9');
+    svg.appendChild(path);
+  });
+}
+
+window.addEventListener('resize', () => {
+  if(document.getElementById('level1').classList.contains('active')){
+    drawLines();
+  }
+});
+
+/* ============================================================
+   УРОВЕНЬ 2 — «ПОНИМАНИЕ» (drag & drop, pointer events)
+   ============================================================ */
+const L2_FILES = [
+  { id:'a', icon:'🖼️', name:'Рисунок_мамы.png', cat:'pic'   },
+  { id:'b', icon:'📄', name:'Стих.docx',        cat:'text'  },
+  { id:'c', icon:'🎵', name:'Танец.mp3',        cat:'music' },
+  { id:'d', icon:'🖼️', name:'Портрет.jpg',      cat:'pic'   },
+  { id:'e', icon:'📝', name:'Домашка.txt',      cat:'text'  }
+];
+
+const L2_FOLDERS = [
+  { cat:'pic',   icon:'📁', name:'Мои рисунки'     },
+  { cat:'music', icon:'📁', name:'Любимая музыка'  },
+  { cat:'text',  icon:'📁', name:'Школьные тексты' }
+];
+
+let dragState = null;
+
+function initLevel2(){
+  const pool = document.getElementById('pool');
+  const folders = document.getElementById('folders');
+  pool.innerHTML = '';
+  folders.innerHTML = '';
+
+  const expectedCounts = {};
+  L2_FILES.forEach(f => {
+    expectedCounts[f.cat] = (expectedCounts[f.cat] || 0) + 1;
+  });
+
+  shuffle(L2_FILES).forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'file-card';
+    el.dataset.cat = f.cat;
+    el.dataset.id  = f.id;
+    el.innerHTML = `<span class="fc-icon">${f.icon}</span><span>${f.name}</span>`;
+    el.addEventListener('pointerdown', onPointerDown);
+    pool.appendChild(el);
+  });
+
+  L2_FOLDERS.forEach(fo => {
+    const el = document.createElement('div');
+    el.className = 'folder';
+    el.dataset.cat = fo.cat;
+    el.dataset.count = '0';
+    el.dataset.expected = expectedCounts[fo.cat] || 0;
+    el.innerHTML = `
+      <div class="folder-icon">${fo.icon}</div>
+      <div class="folder-name">${fo.name}</div>
+      <div class="folder-count">0 / ${expectedCounts[fo.cat] || 0}</div>`;
+    folders.appendChild(el);
+  });
+}
+
+function onPointerDown(e){
+  const el = e.currentTarget;
+  if(el.dataset.done === '1' || dragState) return;
+
+  e.preventDefault();
+  initAudio();
+  snd.click();
+
+  const rect = el.getBoundingClientRect();
+
+  const clone = el.cloneNode(true);
+  clone.classList.add('drag-clone');
+  clone.style.width  = rect.width + 'px';
+  clone.style.height = rect.height + 'px';
+  clone.style.left   = rect.left + 'px';
+  clone.style.top    = rect.top + 'px';
+  document.body.appendChild(clone);
+
+  el.classList.add('ghost');
+
+  dragState = {
+    el,
+    clone,
+    offX: e.clientX - rect.left,
+    offY: e.clientY - rect.top,
+    lastX: e.clientX,
+    lastY: e.clientY
+  };
+
+  window.addEventListener('pointermove', onPointerMove, { passive:false });
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
+}
+
+function onPointerMove(e){
+  if(!dragState) return;
+  e.preventDefault();
+
+  dragState.lastX = e.clientX;
+  dragState.lastY = e.clientY;
+
+  dragState.clone.style.left = (e.clientX - dragState.offX) + 'px';
+  dragState.clone.style.top  = (e.clientY - dragState.offY) + 'px';
+
+  document.querySelectorAll('.folder').forEach(f => f.classList.remove('hover'));
+
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const folder = under ? under.closest('.folder') : null;
+  if(folder) folder.classList.add('hover');
+}
+
+function onPointerUp(e){
+  if(!dragState) return;
+
+  window.removeEventListener('pointermove', onPointerMove);
+  window.removeEventListener('pointerup', onPointerUp);
+  window.removeEventListener('pointercancel', onPointerUp);
+
+  const state = dragState;
+  dragState = null;
+
+  const { el, clone } = state;
+  const x = (e.clientX !== undefined && e.clientX !== null) ? e.clientX : state.lastX;
+  const y = (e.clientY !== undefined && e.clientY !== null) ? e.clientY : state.lastY;
+
+  document.querySelectorAll('.folder').forEach(f => f.classList.remove('hover','bad'));
+
+  const under = document.elementFromPoint(x, y);
+  const folder = under ? under.closest('.folder') : null;
+
+  /* --- ПРАВИЛЬНАЯ ПАПКА --- */
+  if(folder && folder.dataset.cat === el.dataset.cat){
+    const fr = folder.getBoundingClientRect();
+
+    clone.style.transition = 'left .32s ease-in, top .32s ease-in, transform .32s ease-in, opacity .32s';
+    clone.style.left = (fr.left + fr.width / 2 - 30) + 'px';
+    clone.style.top  = (fr.top + fr.height / 2 - 30) + 'px';
+    clone.style.transform = 'scale(.15) rotate(25deg)';
+    clone.style.opacity = '0.2';
+
+    setTimeout(() => clone.remove(), 360);
+
+    el.dataset.done = '1';
+    el.remove();
+
+    const count = parseInt(folder.dataset.count || '0', 10) + 1;
+    folder.dataset.count = count;
+    const expected = folder.dataset.expected || '0';
+    folder.querySelector('.folder-count').textContent = count + ' / ' + expected;
+
+    snd.pop();
+    confetti(fr.left + fr.width / 2, fr.top + fr.height / 2, 12);
+    folder.style.transform = 'scale(1.04)';
+    setTimeout(() => folder.style.transform = '', 160);
+
+    checkLevel2Done();
+    return;
+  }
+
+  /* --- ОШИБКА ИЛИ ПУСТОЕ МЕСТО --- */
+  snd.wrong();
+
+  if(folder){
+    folder.classList.add('bad');
+    setTimeout(() => folder.classList.remove('bad'), 500);
+  }
+
+  clone.classList.add('shake-red');
+
+  const elRect = el.getBoundingClientRect();
+  clone.style.transition = 'left .3s ease, top .3s ease';
+  clone.style.left = elRect.left + 'px';
+  clone.style.top  = elRect.top + 'px';
+
+  setTimeout(() => {
+    clone.remove();
+    el.classList.remove('ghost');
+  }, 420);
+}
+
+function checkLevel2Done(){
+  const folders = document.querySelectorAll('.folder');
+  let total = 0;
+  folders.forEach(f => total += parseInt(f.dataset.count || '0', 10));
+
+  if(total === L2_FILES.length){
+    setTimeout(() => {
+      snd.win();
+      showToast('🎉 Отлично! Все файлы в своих папках!');
+      document.querySelectorAll('.folder').forEach(f => {
+        const r = f.getBoundingClientRect();
+        confetti(r.left + r.width / 2, r.top + r.height / 2, 10);
+      });
+    }, 320);
+  }
+}
+
+/* ============================================================
+   УРОВЕНЬ 3 — «ПРИМЕНЕНИЕ» (выбор команды)
+   ============================================================ */
+const L3_DATA = [
+  { icon:'📁', text:'Нам нужно сделать новую папку для уроков. Что выбираем?',            answer:'create' },
+  { icon:'❌', text:'Файл с ошибкой больше не нужен. Что с ним сделать?',                  answer:'delete' },
+  { icon:'🖼️', text:'Нужно сделать дубликат рисунка на флешку. Что нажмём?',              answer:'copy'   },
+  { icon:'📂', text:'Перенести файл из «Загрузок» в папку «Документы». Что сделать?',      answer:'move'   }
+];
+
+const L3_ANSWERS = [
+  { id:'create', icon:'✨',   label:'Создать'      },
+  { id:'copy',   icon:'📄📄', label:'Скопировать'  },
+  { id:'move',   icon:'📦',   label:'Переместить'  },
+  { id:'delete', icon:'🗑️',   label:'Удалить'      }
+];
+
+let l3Index = 0;
+let l3Locked = false;
+
+function initLevel3(){
+  l3Index = 0;
+  l3Locked = false;
+
+  const wrap = document.getElementById('answers');
+  wrap.innerHTML = '';
+
+  L3_ANSWERS.forEach(a => {
+    const b = document.createElement('button');
+    b.className = 'answer-btn';
+    b.dataset.ans = a.id;
+    b.innerHTML = `<span class="em">${a.icon}</span><span>${a.label}</span>`;
+    b.addEventListener('click', () => onAnswer(b));
+    wrap.appendChild(b);
+  });
+
+  renderSituation();
+}
+
+function renderSituation(){
+  l3Locked = false;
+
+  const cur = L3_DATA[l3Index];
+  const s = document.getElementById('situation');
+  s.innerHTML = `<span class="sit-icon">${cur.icon}</span><span>${cur.text}</span>`;
+
+  document.getElementById('l3progress').textContent =
+    `Ситуация ${l3Index + 1} из ${L3_DATA.length}`;
+
+  document.querySelectorAll('.answer-btn').forEach(b => {
+    b.classList.remove('correct');
+    b.disabled = false;
+    b.style.borderColor = '';
+    b.style.background = '';
+  });
+}
+
+function onAnswer(btn){
+  initAudio();
+  if(l3Locked) return;
+
+  const cur = L3_DATA[l3Index];
+
+  if(btn.dataset.ans === cur.answer){
+    l3Locked = true;
+    btn.classList.add('correct');
+    snd.correct();
+
+    const r = btn.getBoundingClientRect();
+    confetti(r.left + r.width / 2, r.top + r.height / 2, 18);
+
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+    l3Index++;
+
+    setTimeout(() => {
+      if(l3Index >= L3_DATA.length){
+        snd.win();
+        showToast('🏆 Отлично! Ты умеешь работать с файлами!');
+        document.getElementById('situation').innerHTML =
+          '<span class="sit-icon">🏆</span><span>Ура! Все задания выполнены! Ты настоящий помощник компьютера!</span>';
+        document.getElementById('l3progress').textContent = 'Готово! 4 из 4';
+        const sRect = document.getElementById('situation').getBoundingClientRect();
+        confetti(sRect.left + sRect.width / 2, sRect.top + sRect.height / 2, 24);
+      } else {
+        renderSituation();
+      }
+    }, 1050);
+
+  } else {
+    btn.classList.add('shake-red');
+    snd.wrong();
+    setTimeout(() => btn.classList.remove('shake-red'), 550);
+  }
+}
+
+/* ============================================================
+   ПЕРЕКЛЮЧЕНИЕ УРОВНЕЙ + СБРОС
+   ============================================================ */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    initAudio(); snd.click();
+
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    document.querySelectorAll('.level').forEach(l => l.classList.remove('active'));
+    const lvl = document.getElementById('level' + tab.dataset.level);
+    lvl.classList.add('active');
+
+    if(tab.dataset.level === '1'){
+      setTimeout(drawLines, 70);
+    }
+  });
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  initAudio(); snd.click();
+
+  initLevel1();
+  initLevel2();
+  initLevel3();
+
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.tab[data-level="1"]').classList.add('active');
+
+  document.querySelectorAll('.level').forEach(l => l.classList.remove('active'));
+  document.getElementById('level1').classList.add('active');
+
+  setTimeout(drawLines, 70);
+  showToast('🔄 Начинаем заново!');
+});
+
+/* ============================================================
+   СТАРТ
+   ============================================================ */
+initLevel1();
+initLevel2();
+initLevel3();
+
+window.addEventListener('load', () => setTimeout(drawLines, 120));
+window.addEventListener('orientationchange', () => setTimeout(drawLines, 250));
+</script>
+</body>
+</html>
